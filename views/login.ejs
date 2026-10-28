@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-title">Log <span class="text-accent">in</span></h1>
+  </div>
+</section>
+
+<section class="section pt-5">
+  <div class="container">
+    <div class="auth-card">
+      <% if (error) { %><div class="alert alert-danger" role="alert"><%= error %></div><% } %>
+      <form method="post" action="/login">
+        <div class="mb-3">
+          <label for="email" class="form-label fw-semibold">Email</label>
+          <input type="email" class="form-control" id="email" name="email" value="<%= values.email %>"
+            autocomplete="email" maxlength="254" required autofocus>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="form-label fw-semibold">Password</label>
+          <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-accent btn-lg w-100">Log in</button>
+      </form>
+      <p class="mt-4 mb-0 text-center">New to Iron Dunes? <a href="/register" class="link-accent">Create an account</a></p>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

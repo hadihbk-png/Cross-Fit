@@ -1,0 +1,20 @@
+{
+  "name": "iron-dunes-crossfit",
+  "version": "1.0.0",
+  "description": "Iron Dunes CrossFit — Khalifa City, Abu Dhabi",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
+    "bcryptjs": "^3.0.3",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "nodemailer": "^10.2.1",
+    "stripe": "^23.0.1"
+  }
+}

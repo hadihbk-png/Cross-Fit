@@ -1,0 +1,20 @@
+<% if (!slots.date) { %>
+  <p class="text-secondary mb-0">Pick a date to see the sessions.</p>
+<% } else if (slots.message) { %>
+  <p class="fw-semibold mb-0"><i class="bi bi-info-circle text-accent"></i> <%= slots.message %></p>
+<% } else { %>
+  <div class="session-grid" role="radiogroup" aria-label="Available sessions">
+    <% slots.sessions.forEach(s => { %>
+      <label class="session-option">
+        <input type="radio" class="choice-input" name="time" value="<%= s.time %>" required
+          <%= s.time === slots.selected ? 'checked' : '' %> <%= s.spotsLeft ? '' : 'disabled' %>>
+        <span class="choice-body">
+          <span class="session-time"><%= s.label %></span>
+          <span class="session-spots">
+            <%= s.spotsLeft ? `${s.spotsLeft} of ${s.capacity} spots left` : 'Full' %>
+          </span>
+        </span>
+      </label>
+    <% }) %>
+  </div>
+<% } %>

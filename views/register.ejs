@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-title">Create your <span class="text-accent">account</span></h1>
+  </div>
+</section>
+
+<section class="section pt-5">
+  <div class="container">
+    <div class="auth-card">
+      <p class="text-secondary mb-4">Sign up with the email you book with, and your bookings will show up in My Bookings.</p>
+      <form method="post" action="/register">
+        <div class="mb-3">
+          <label for="name" class="form-label fw-semibold">Full name</label>
+          <input type="text" class="form-control <%= errors.name ? 'is-invalid' : '' %>" id="name" name="name"
+            value="<%= values.name %>" autocomplete="name" minlength="2" maxlength="80" required>
+          <% if (errors.name) { %><div class="field-error"><%= errors.name %></div><% } %>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label fw-semibold">Email</label>
+          <input type="email" class="form-control <%= errors.email ? 'is-invalid' : '' %>" id="email" name="email"
+            value="<%= values.email %>" autocomplete="email" maxlength="254" required>
+          <% if (errors.email) { %><div class="field-error"><%= errors.email %></div><% } %>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label fw-semibold">Password</label>
+          <input type="password" class="form-control <%= errors.password ? 'is-invalid' : '' %>" id="password" name="password"
+            autocomplete="new-password" minlength="8" maxlength="72" required aria-describedby="passwordHelp">
+          <div id="passwordHelp" class="form-text">At least 8 characters.</div>
+          <% if (errors.password) { %><div class="field-error"><%= errors.password %></div><% } %>
+        </div>
+        <div class="mb-4">
+          <label for="confirmPassword" class="form-label fw-semibold">Confirm password</label>
+          <input type="password" class="form-control <%= errors.confirmPassword ? 'is-invalid' : '' %>" id="confirmPassword"
+            name="confirmPassword" autocomplete="new-password" minlength="8" maxlength="72" required>
+          <% if (errors.confirmPassword) { %><div class="field-error"><%= errors.confirmPassword %></div><% } %>
+        </div>
+        <button type="submit" class="btn btn-accent btn-lg w-100">Create account</button>
+      </form>
+      <p class="mt-4 mb-0 text-center">Already have an account? <a href="/login" class="link-accent">Log in</a></p>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,153 @@
+<%- include('partials/header') %>
+
+<section class="desk-hero">
+  <div class="container position-relative">
+    <span class="desk-byline">by <%= site.author %></span>
+    <p class="desk-label mb-2"><i class="bi bi-clipboard-check"></i> <%= site.name %> Coach Desk — <%= site.brand %></p>
+    <h1 class="page-title">Today at the <span class="text-accent">box</span></h1>
+    <p class="mb-0 text-white-50"><%= todayLabel %> · Abu Dhabi time</p>
+
+    <div class="desk-stats">
+      <div class="desk-stat"><span class="desk-stat-num"><%= stats.bookings %></span><span class="desk-stat-label">Bookings today</span></div>
+      <div class="desk-stat"><span class="desk-stat-num text-accent"><%= stats.checkIns %></span><span class="desk-stat-label">Check-ins</span></div>
+      <div class="desk-stat"><span class="desk-stat-num"><%= stats.noShows %></span><span class="desk-stat-label">No-shows</span></div>
+      <% if (stats.pending) { %>
+        <div class="desk-stat"><span class="desk-stat-num"><%= stats.pending %></span><span class="desk-stat-label">Awaiting payment</span></div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section class="section pt-4">
+  <div class="container">
+
+    <% if (!sessions.length) { %>
+      <div class="empty-state">
+        <i class="bi bi-moon-stars"></i>
+        <p class="mb-0">No sessions today. The box is closed — enjoy the rest day.</p>
+      </div>
+    <% } else { %>
+      <nav class="desk-jump" aria-label="Jump to session">
+        <% sessions.forEach(s => { %>
+          <a href="#<%= s.anchor %>" class="desk-jump-chip desk-jump-<%= s.state %>"><%= s.time %></a>
+        <% }) %>
+      </nav>
+    <% } %>
+
+    <% sessions.forEach(s => { %>
+      <article class="desk-slot desk-slot-<%= s.state %>" id="<%= s.anchor %>">
+        <header class="desk-slot-head">
+          <h2 class="desk-slot-time"><%= s.label %></h2>
+          <span class="desk-slot-state"><%= s.state === 'live' ? 'In progress' : s.state === 'finished' ? 'Finished' : 'Upcoming' %></span>
+        </header>
+
+        <% if (!s.classes.length) { %>
+          <p class="text-secondary mb-0 px-3 pb-3">No bookings yet.</p>
+        <% } %>
+
+        <% s.classes.forEach(c => { %>
+          <div class="desk-class">
+            <div class="desk-class-head">
+              <div>
+                <span class="fw-bold fs-5"><%= c.className %></span>
+                <span class="text-secondary ms-2">Coach <%= c.coach %></span>
+              </div>
+              <span class="desk-fill <%= c.filled >= c.capacity ? 'is-full' : '' %>">
+                <%= c.filled %> / <%= c.capacity %> spots filled
+              </span>
+            </div>
+
+            <ul class="desk-athletes list-unstyled mb-0">
+              <% c.athletes.forEach(a => { %>
+                <li class="desk-athlete <%= a.beginner ? 'is-beginner' : '' %>">
+                  <div class="desk-athlete-info">
+                    <span class="fw-bold"><%= a.name %></span>
+                    <% if (a.beginner) { %>
+                      <span class="badge badge-beginner"><i class="bi bi-exclamation-diamond-fill"></i> Beginner · scale movements</span>
+                    <% } else { %>
+                      <span class="text-secondary small"><%= a.experience %></span>
+                    <% } %>
+                    <span class="badge status-<%= a.status.toLowerCase().replaceAll(' ', '-') %>"><%= a.status === 'Pending' ? 'Awaiting payment' : a.status %></span>
+                  </div>
+                  <div class="desk-athlete-actions">
+                    <% if (a.canMark) { %>
+                      <% actions.forEach(action => { %>
+                        <form method="post" action="/desk/bookings/<%= a.id %>/status" class="m-0">
+                          <input type="hidden" name="status" value="<%= action %>">
+                          <button type="submit" class="btn btn-sm desk-action desk-action-<%= action.toLowerCase().replaceAll(' ', '-') %> <%= a.status === action ? 'is-current' : '' %>"
+                            <%= a.status === action ? 'disabled aria-pressed=true' : '' %>><%= action %></button>
+                        </form>
+                      <% }) %>
+                    <% } %>
+                    <% if (a.canRemind) { %>
+                      <form method="post" action="/desk/<%= a.id %>/remind" class="m-0 remind-form">
+                        <button type="submit" class="btn btn-sm btn-outline-dark" <%= emailReady ? '' : 'disabled' %> title="<%= a.lastReminder ? 'Last sent ' + a.lastReminder : 'Email a reminder' %>">
+                          <i class="bi bi-envelope"></i> Send reminder
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% }) %>
+      </article>
+    <% }) %>
+
+    <h2 class="h4 fw-bold mt-5 mb-3">Upcoming bookings <span class="badge text-bg-dark align-middle"><%= upcoming.length %></span></h2>
+    <% if (!emailReady) { %>
+      <p class="small text-danger fw-semibold"><i class="bi bi-exclamation-triangle"></i> Email isn't set up, so reminders can't be sent.</p>
+    <% } %>
+    <% if (!upcoming.length) { %>
+      <p class="text-secondary">No bookings on later days yet.</p>
+    <% } else { %>
+      <div class="table-responsive desk-table-wrap">
+        <table class="table desk-table desk-table-stack align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Athlete</th>
+              <th scope="col">Date &amp; time</th>
+              <th scope="col">Class</th>
+              <th scope="col">Coach</th>
+              <th scope="col">Experience</th>
+              <th scope="col" class="text-end">Reminder</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% upcoming.forEach(r => { %>
+              <tr>
+                <td class="fw-bold desk-cell-name"><%= r.athleteName %></td>
+                <td data-label="When"><%= r.dateLabel %><br><span class="text-secondary small"><%= r.timeLabel %></span></td>
+                <td data-label="Class"><%= r.className %></td>
+                <td data-label="Coach"><%= r.coach %></td>
+                <td data-label="Experience"><%= r.experienceLevel %></td>
+                <td class="text-end desk-cell-action">
+                  <form method="post" action="/desk/<%= r.id %>/remind" class="m-0 remind-form">
+                    <button type="submit" class="btn btn-sm btn-accent text-nowrap desk-remind-btn" <%= emailReady ? '' : 'disabled' %>>
+                      <i class="bi bi-envelope"></i> Send reminder
+                    </button>
+                  </form>
+                  <% if (r.lastReminder) { %><div class="small text-secondary mt-1 text-nowrap">Last sent <%= r.lastReminder %></div><% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<script>
+  // Stop double clicks sending two reminders
+  document.querySelectorAll('.remind-form').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

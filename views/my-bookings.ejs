@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow mb-2"><i class="bi bi-person-circle"></i> <%= currentUser.name %></p>
+    <h1 class="page-title">My <span class="text-accent">Bookings</span></h1>
+  </div>
+</section>
+
+<section class="section pt-5">
+  <div class="container">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <h2 class="h3 fw-bold mb-0">Upcoming</h2>
+      <a href="/booking" class="btn btn-accent">Book a class</a>
+    </div>
+
+    <% if (!upcoming.length) { %>
+      <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <p class="mb-0">No upcoming classes. Time to get one in the diary.</p>
+      </div>
+    <% } else { %>
+      <div class="d-grid gap-3">
+        <% upcoming.forEach(b => { %>
+          <%- include('partials/booking-card', { b, showCancel: true }) %>
+        <% }) %>
+      </div>
+      <p class="small text-secondary mt-3">You can cancel online up to <%= cutoffText %> before class. After that, please call us on <%= site.phone %>.</p>
+    <% } %>
+
+    <% if (past.length) { %>
+      <h2 class="h3 fw-bold mt-5 mb-4">Past</h2>
+      <div class="d-grid gap-3 past-bookings">
+        <% past.forEach(b => { %>
+          <%- include('partials/booking-card', { b, showCancel: false }) %>
+        <% }) %>
+      </div>
+    <% } %>
+
+  </div>
+</section>
+
+<%- include('partials/footer') %>

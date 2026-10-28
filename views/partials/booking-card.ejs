@@ -1,0 +1,20 @@
+<div class="my-booking <%= b.status === 'Cancelled' ? 'is-cancelled' : '' %>">
+  <div class="my-booking-main">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+      <span class="fw-bold fs-5"><%= b.className %></span>
+      <span class="badge status-<%= b.status.toLowerCase().replaceAll(' ', '-') %>"><%= b.status %></span>
+    </div>
+    <div><i class="bi bi-calendar-event"></i> <%= b.dateLabel %> · <%= b.timeLabel %></div>
+    <div class="text-secondary small">Coach <%= b.coach %> · Ref <%= b.reference %></div>
+  </div>
+  <% if (showCancel && b.status === 'Booked') { %>
+    <% if (b.canCancel) { %>
+      <form method="post" action="/my-bookings/<%= b.id %>/cancel" class="m-0"
+        onsubmit="return confirm('Cancel this booking?');">
+        <button type="submit" class="btn btn-outline-danger">Cancel</button>
+      </form>
+    <% } else { %>
+      <span class="small text-secondary">Too close to class to cancel online</span>
+    <% } %>
+  <% } %>
+</div>

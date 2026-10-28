@@ -1,0 +1,240 @@
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow mb-2"><i class="bi bi-geo-alt-fill"></i> <%= site.area %></p>
+    <h1 class="page-title">
+      <% if (step === 'confirmed') { %>You're <span class="text-accent">booked</span>
+      <% } else if (step === 'payment-incomplete') { %>Payment not <span class="text-accent">completed</span>
+      <% } else if (step === 'summary') { %>Review your <span class="text-accent">booking</span>
+      <% } else { %>Book a <span class="text-accent">class</span><% } %>
+    </h1>
+  </div>
+</section>
+
+<section class="section booking pt-5">
+  <div class="container">
+
+  <% if (step === 'form') { %>
+    <% if (Object.keys(errors).length) { %>
+      <div class="alert alert-danger" role="alert">
+        <strong>Please fix the following:</strong>
+        <ul class="mb-0 mt-1">
+          <% Object.values(errors).forEach(e => { %><li><%= e %></li><% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form method="post" action="/booking" id="booking-form">
+
+      <!-- Step 1: class type -->
+      <fieldset class="booking-step">
+        <legend><span class="step-num">1</span> Choose a class</legend>
+        <div class="row g-3">
+          <% classes.forEach(c => { %>
+            <div class="col-6 col-lg-3 d-flex">
+              <label class="choice-card w-100">
+                <input type="radio" class="choice-input" name="classType" value="<%= c.key %>" required
+                  <%= values.classType === c.key ? 'checked' : '' %>>
+                <span class="choice-body">
+                  <i class="bi <%= c.icon %> choice-icon"></i>
+                  <span class="fw-bold d-block mt-2"><%= c.name %></span>
+                </span>
+              </label>
+            </div>
+          <% }) %>
+        </div>
+        <% if (errors.classType) { %><div class="field-error"><%= errors.classType %></div><% } %>
+      </fieldset>
+
+      <!-- Step 2: coach, set by the class type -->
+      <fieldset class="booking-step">
+        <legend><span class="step-num">2</span> Your coach</legend>
+        <div id="coach-box" aria-live="polite">
+          <p class="text-secondary mb-0 coach-placeholder" <%= values.classType ? 'hidden' : '' %>>Choose a class to see who's coaching it.</p>
+          <% classes.forEach(c => { %>
+            <div class="coach-pick" data-class="<%= c.key %>" <%= values.classType === c.key ? '' : 'hidden' %>>
+              <div class="coach-avatar coach-avatar-sm"><%= c.coach.name.split(' ').map(n => n[0]).join('') %></div>
+              <div>
+                <div class="fw-bold fs-5"><%= c.coach.name %></div>
+                <div class="text-secondary"><%= c.coach.role %> · <%= c.coach.cert %> — coaches every <%= c.name %> session</div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </fieldset>
+
+      <!-- Step 3: date and session -->
+      <fieldset class="booking-step">
+        <legend><span class="step-num">3</span> Pick a date &amp; session</legend>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <label for="date" class="form-label fw-semibold">Date</label>
+            <input type="date" class="form-control form-control-lg <%= errors.date ? 'is-invalid' : '' %>" id="date" name="date"
+              min="<%= minDate %>" max="<%= maxDate %>" value="<%= values.date %>" required>
+            <div class="form-text">Mon–Sat · closed Sundays · up to 30 days ahead</div>
+            <% if (errors.date) { %><div class="field-error"><%= errors.date %></div><% } %>
+          </div>
+          <div class="col-md-8">
+            <span class="form-label fw-semibold d-block">60-minute session</span>
+            <div id="sessions" aria-live="polite">
+              <%- include('partials/booking-sessions', { slots }) %>
+            </div>
+            <% if (errors.time) { %><div class="field-error"><%= errors.time %></div><% } %>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Step 4: athlete details -->
+      <fieldset class="booking-step">
+        <legend><span class="step-num">4</span> Athlete details</legend>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="name" class="form-label fw-semibold">Full name</label>
+            <input type="text" class="form-control <%= errors.name ? 'is-invalid' : '' %>" id="name" name="name"
+              value="<%= values.name %>" autocomplete="name" minlength="2" maxlength="80" required>
+            <% if (errors.name) { %><div class="field-error"><%= errors.name %></div><% } %>
+          </div>
+          <div class="col-md-6">
+            <label for="phone" class="form-label fw-semibold">Phone</label>
+            <input type="tel" class="form-control <%= errors.phone ? 'is-invalid' : '' %>" id="phone" name="phone"
+              value="<%= values.phone %>" autocomplete="tel" placeholder="+971 50 123 4567" maxlength="25" required>
+            <% if (errors.phone) { %><div class="field-error"><%= errors.phone %></div><% } %>
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label fw-semibold">Email</label>
+            <input type="email" class="form-control <%= errors.email ? 'is-invalid' : '' %>" id="email" name="email"
+              value="<%= values.email %>" autocomplete="email" maxlength="254" required>
+            <% if (errors.email) { %><div class="field-error"><%= errors.email %></div><% } %>
+          </div>
+          <div class="col-md-6">
+            <label for="experience" class="form-label fw-semibold">Experience level</label>
+            <select class="form-select <%= errors.experience ? 'is-invalid' : '' %>" id="experience" name="experience" required>
+              <option value="" <%= values.experience ? '' : 'selected' %> disabled>Choose…</option>
+              <% experienceLevels.forEach(level => { %>
+                <option <%= values.experience === level ? 'selected' : '' %>><%= level %></option>
+              <% }) %>
+            </select>
+            <% if (errors.experience) { %><div class="field-error"><%= errors.experience %></div><% } %>
+          </div>
+          <div class="col-12">
+            <div class="form-check fit-check">
+              <input class="form-check-input <%= errors.fitConfirm ? 'is-invalid' : '' %>" type="checkbox" id="fitConfirm"
+                name="fitConfirm" value="yes" <%= values.fitConfirm ? 'checked' : '' %> required>
+              <label class="form-check-label" for="fitConfirm">
+                I confirm I am fit to train and will tell the coach about any injury before class
+              </label>
+            </div>
+            <% if (errors.fitConfirm) { %><div class="field-error"><%= errors.fitConfirm %></div><% } %>
+          </div>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-accent btn-lg booking-submit">Review booking <i class="bi bi-arrow-right"></i></button>
+    </form>
+
+  <% } else if (step === 'payment-incomplete') { %>
+    <div class="booking-summary">
+      <div class="payment-banner" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          <div class="fw-bold fs-5">Your spot is not confirmed</div>
+          <div><%= message %></div>
+        </div>
+      </div>
+      <% if (typeof summary !== 'undefined') { %>
+        <dl class="summary-list">
+          <div><dt>Reference</dt><dd class="booking-ref"><%= reference %></dd></div>
+          <div><dt>Status</dt><dd><span class="badge status-<%= status.toLowerCase().replaceAll(' ', '-') %>"><%= status %></span></dd></div>
+          <div><dt>Class</dt><dd><%= summary.className %></dd></div>
+          <div><dt>Date</dt><dd><%= summary.dateLabel %></dd></div>
+          <div><dt>Session</dt><dd><%= summary.timeLabel %></dd></div>
+        </dl>
+      <% } %>
+      <div class="d-flex flex-column flex-md-row gap-3 booking-actions">
+        <% if (resumeUrl) { %>
+          <a href="<%= resumeUrl %>" class="btn btn-accent btn-lg">Return to payment <i class="bi bi-credit-card"></i></a>
+          <a href="/booking-success?session_id=<%= encodeURIComponent(sessionId) %>" class="btn btn-dark btn-lg">Check again</a>
+        <% } else { %>
+          <a href="/booking" class="btn btn-accent btn-lg">Book a class</a>
+        <% } %>
+        <a href="/" class="btn btn-outline-dark btn-lg">Back to home</a>
+      </div>
+      <p class="small text-secondary mt-4 mb-0">Questions about a payment? Call us on <%= site.phone %>.</p>
+    </div>
+
+  <% } else { %>
+    <div class="booking-summary">
+      <% if (step === 'confirmed') { %>
+        <div class="success-panel" id="booking-success" role="status" tabindex="-1">
+          <div class="success-icon" aria-hidden="true"><i class="bi bi-check-lg"></i></div>
+          <h2 class="success-title">Booking confirmed!</h2>
+          <p class="success-lead">
+            Payment of <%= paidLabel %> received. See you on the floor, <%= values.name.split(' ')[0] %>! You're in for
+            <strong><%= summary.className %></strong> on <strong><%= summary.dateLabel %></strong>,
+            <strong><%= summary.timeLabel %></strong>.
+          </p>
+          <div class="success-ref">Reference <span><%= reference %></span></div>
+          <% if (emailReady) { %>
+            <p class="success-note"><i class="bi bi-envelope-check"></i> A confirmation email is on its way to <%= values.email %>.</p>
+          <% } %>
+          <p class="success-note"><i class="bi bi-droplet"></i> Bring water, a towel and training shoes. Arrive 10 minutes early.</p>
+        </div>
+        <script>document.getElementById('booking-success').focus({ preventScroll: true });</script>
+      <% } %>
+
+      <dl class="summary-list">
+        <% if (step === 'confirmed') { %>
+          <div><dt>Status</dt><dd><span class="badge status-<%= status.toLowerCase().replaceAll(' ', '-') %>"><%= status %></span></dd></div>
+          <div><dt>Paid</dt><dd><%= paidLabel %> <span class="text-secondary">· card payment via Stripe</span></dd></div>
+        <% } %>
+        <div><dt>Class</dt><dd><%= summary.className %></dd></div>
+        <div><dt>Coach</dt><dd><%= summary.coach.name %> <span class="text-secondary">(<%= summary.coach.cert %>)</span></dd></div>
+        <div><dt>Date</dt><dd><%= summary.dateLabel %></dd></div>
+        <div><dt>Session</dt><dd><%= summary.timeLabel %> <span class="text-secondary">· <%= summary.spotsLeft %> of <%= summary.capacity %> spots left</span></dd></div>
+        <div><dt>Athlete</dt><dd><%= values.name %></dd></div>
+        <div><dt>Phone</dt><dd><%= values.phone %></dd></div>
+        <div><dt>Email</dt><dd><%= values.email %></dd></div>
+        <div><dt>Experience</dt><dd><%= values.experience %></dd></div>
+        <div><dt>Fit to train</dt><dd><i class="bi bi-check-lg text-accent"></i> Confirmed</dd></div>
+        <% if (step === 'summary') { %>
+          <div class="summary-total"><dt>Drop-in fee</dt><dd><%= dropIn.label %></dd></div>
+        <% } %>
+      </dl>
+
+      <% if (step === 'summary') { %>
+        <form method="post" action="/booking/confirm" class="d-flex flex-column flex-md-row gap-3 booking-actions">
+          <% ['classType', 'date', 'time', 'name', 'phone', 'email', 'experience'].forEach(field => { %>
+            <input type="hidden" name="<%= field %>" value="<%= values[field] %>">
+          <% }) %>
+          <input type="hidden" name="fitConfirm" value="yes">
+          <button type="submit" class="btn btn-accent btn-lg">Confirm booking &amp; pay <%= dropIn.label %> <i class="bi bi-lock-fill"></i></button>
+          <button type="submit" class="btn btn-outline-dark btn-lg" formaction="/booking/edit" formnovalidate>Change details</button>
+        </form>
+        <p class="small text-secondary mt-3 mb-0">
+          <i class="bi bi-shield-lock"></i> You'll pay on Stripe's secure checkout page. We hold your spot for 30 minutes while you pay,
+          and it's only confirmed once payment goes through.
+        </p>
+      <% } else { %>
+        <p class="small text-secondary mb-4">
+          Keep your reference.
+          <% if (currentUser && currentUser.email.toLowerCase() === values.email) { %>
+            You can cancel online in My Bookings up to 2 hours before class.
+          <% } else { %>
+            To cancel, <a href="/login">log in</a> with this email or call us on <%= site.phone %>.
+          <% } %>
+        </p>
+        <div class="d-flex flex-column flex-md-row gap-3 booking-actions">
+          <a href="/booking" class="btn btn-accent btn-lg">Book another class</a>
+          <% if (currentUser) { %><a href="/my-bookings" class="btn btn-dark btn-lg">My bookings</a><% } %>
+          <a href="/" class="btn btn-outline-dark btn-lg">Back to home</a>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+
+  </div>
+</section>
+
+<script src="/js/booking.js" defer></script>
+<%- include('partials/footer') %>

@@ -1,0 +1,53 @@
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row gy-3 align-items-center">
+        <div class="col-md-6 text-center text-md-start">
+          <div class="brand fs-4"><i class="bi bi-lightning-charge-fill text-accent"></i> <%= site.name %></div>
+          <div class="text-white-50 small"><%= site.area %></div>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <a class="social" href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a class="social" href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          <a class="social" href="tel:<%= site.phone.replace(/\s/g, '') %>" aria-label="Call us"><i class="bi bi-telephone"></i></a>
+        </div>
+      </div>
+      <hr class="border-secondary my-4">
+      <p class="small text-white-50 text-center mb-1">
+        <%= site.name %> · built at <a href="<%= site.brandUrl %>" target="_blank" rel="noopener"><%= site.brand %> · lisrc.ae</a> · by <%= site.author %>
+      </p>
+      <p class="small text-white-50 text-center mb-0">Consult a doctor before starting any new exercise programme.</p>
+    </div>
+  </footer>
+  <!-- Chat assistant (talks to POST /api/chat; no API keys in the browser) -->
+  <div class="chat-widget" id="chat-widget">
+    <section class="chat-panel" id="chat-panel" role="dialog" aria-modal="false" aria-labelledby="chat-title" hidden>
+      <header class="chat-header">
+        <div>
+          <div class="chat-title" id="chat-title"><i class="bi bi-lightning-charge-fill text-accent"></i> <%= assistantName %></div>
+          <div class="chat-subtitle">AI assistant · answers about classes, times &amp; prices</div>
+        </div>
+        <div class="d-flex gap-1">
+          <button type="button" class="chat-icon-btn" id="chat-reset" aria-label="Start a new chat" title="New chat"><i class="bi bi-arrow-counterclockwise"></i></button>
+          <button type="button" class="chat-icon-btn" id="chat-close" aria-label="Close chat"><i class="bi bi-x-lg"></i></button>
+        </div>
+      </header>
+      <div class="chat-messages" id="chat-messages" aria-live="polite">
+        <div class="chat-msg chat-msg-bot">Hi! Ask me about our classes, coaches, schedule, prices or location. 💪</div>
+      </div>
+      <p class="chat-note">AI answers can be wrong, and this isn't medical advice. Never share card details, passwords or your Emirates ID here.</p>
+      <form class="chat-form" id="chat-form" autocomplete="off">
+        <label for="chat-input" class="visually-hidden">Your message</label>
+        <textarea id="chat-input" rows="1" maxlength="800" placeholder="Type your question…" required></textarea>
+        <button type="submit" class="chat-send" aria-label="Send"><i class="bi bi-send-fill"></i></button>
+      </form>
+    </section>
+    <button type="button" class="chat-launcher" id="chat-launcher" aria-controls="chat-panel" aria-expanded="false">
+      <i class="bi bi-chat-dots-fill"></i><span><%= assistantName %></span>
+    </button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/chat.js" defer></script>
+</body>
+</html>
