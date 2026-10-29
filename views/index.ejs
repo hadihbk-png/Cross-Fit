@@ -1,32 +1,79 @@
 <%- include('partials/header') %>
 
-<!-- Hero -->
-<section id="home" class="hero d-flex align-items-center">
-  <div class="container text-center text-lg-start">
-    <p class="eyebrow mb-3"><i class="bi bi-geo-alt-fill"></i> <%= site.area %></p>
-    <h1 class="hero-title"><%= site.name %></h1>
-    <p class="hero-tagline"><%= site.tagline %>.</p>
-    <div class="hero-cta d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-lg-start mt-4">
+<!-- Hero: interactive "chalk dust" canvas, pointer spotlight, optional gym photo -->
+<section id="home" class="hero d-flex align-items-center <%= photos.hero ? 'has-photo' : '' %>">
+  <% if (photos.hero) { %>
+    <div class="hero-photo" style="background-image: url('<%= photos.hero %>')" role="img" aria-label="Training at <%= site.name %>"></div>
+  <% } %>
+  <canvas class="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-spotlight" aria-hidden="true"></div>
+  <svg class="hero-plate" viewBox="0 0 200 200" aria-hidden="true">
+    <circle cx="100" cy="100" r="96" />
+    <circle cx="100" cy="100" r="70" />
+    <circle cx="100" cy="100" r="18" />
+    <text x="100" y="42" text-anchor="middle">20 KG</text>
+    <text x="100" y="170" text-anchor="middle">IRON DUNES</text>
+  </svg>
+  <div class="container text-center text-lg-start position-relative">
+    <p class="eyebrow mb-3 reveal"><i class="bi bi-geo-alt-fill"></i> <%= site.area %></p>
+    <h1 class="hero-title reveal"><%= site.name %></h1>
+    <p class="hero-tagline reveal"><%= site.tagline %>.</p>
+    <div class="hero-cta d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-lg-start mt-4 reveal">
       <a href="/booking" class="btn btn-accent btn-lg px-5">Book a class <i class="bi bi-arrow-right"></i></a>
       <a href="#schedule" class="btn btn-outline-light btn-lg px-5">View schedule</a>
     </div>
   </div>
+  <a href="#classes" class="hero-scroll" aria-label="Scroll to classes"><i class="bi bi-chevron-double-down"></i></a>
 </section>
+
+<!-- Moving banner -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <% for (let i = 0; i < 2; i++) { %>
+      <span><%= site.tagline %></span><i class="bi bi-lightning-charge-fill"></i>
+      <span>Scaled for every level</span><i class="bi bi-lightning-charge-fill"></i>
+      <span><%= booking.sessionMinutes %>-minute classes</span><i class="bi bi-lightning-charge-fill"></i>
+      <span>Max <%= booking.capacity %> athletes</span><i class="bi bi-lightning-charge-fill"></i>
+      <span><%= site.locality %></span><i class="bi bi-lightning-charge-fill"></i>
+    <% } %>
+  </div>
+</div>
 
 <!-- Classes -->
 <section id="classes" class="section">
   <div class="container">
-    <h2 class="section-title">Our <span class="text-accent">Classes</span></h2>
+    <h2 class="section-title reveal">Our <span class="text-accent">Classes</span></h2>
     <div class="row g-4">
-      <% classes.forEach(c => { %>
-        <div class="col-12 col-sm-6 col-lg-3 d-flex">
-          <div class="class-card w-100">
-            <i class="bi <%= c.icon %> class-icon"></i>
-            <h3 class="h5 fw-bold mt-3"><%= c.name %></h3>
-            <p class="mb-0 text-secondary"><%= c.text %></p>
-          </div>
+      <% classes.forEach((c, i) => { %>
+        <div class="col-12 col-sm-6 col-lg-3 d-flex reveal" style="--reveal-delay: <%= i * 90 %>ms">
+          <a href="/booking?class=<%= c.key %>" class="class-card tilt w-100">
+            <div class="class-media class-art-<%= c.key %>">
+              <% if (photos.classes[c.key]) { %>
+                <img src="<%= photos.classes[c.key] %>" alt="<%= c.name %> class at <%= site.name %>" loading="lazy">
+              <% } else { %>
+                <i class="bi <%= c.icon %>" aria-hidden="true"></i>
+              <% } %>
+            </div>
+            <div class="class-body">
+              <h3 class="h5 fw-bold mb-2"><%= c.name %></h3>
+              <p class="mb-3 text-secondary"><%= c.text %></p>
+              <span class="class-link">Book this class <i class="bi bi-arrow-right"></i></span>
+            </div>
+          </a>
         </div>
       <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- Facts strip (count up when scrolled into view) -->
+<section class="facts" aria-label="The box in numbers">
+  <div class="container">
+    <div class="facts-grid">
+      <div class="fact reveal"><span class="fact-num" data-count="<%= classes.length %>"><%= classes.length %></span><span class="fact-label">Class types</span></div>
+      <div class="fact reveal"><span class="fact-num" data-count="<%= coaches.length %>"><%= coaches.length %></span><span class="fact-label">Qualified coaches</span></div>
+      <div class="fact reveal"><span class="fact-num" data-count="<%= booking.sessionMinutes %>"><%= booking.sessionMinutes %></span><span class="fact-label">Minutes per class</span></div>
+      <div class="fact reveal"><span class="fact-num" data-count="<%= booking.capacity %>"><%= booking.capacity %></span><span class="fact-label">Athletes max per class</span></div>
     </div>
   </div>
 </section>
@@ -34,15 +81,26 @@
 <!-- Coaches -->
 <section id="coaches" class="section section-dark">
   <div class="container">
-    <h2 class="section-title">Meet the <span class="text-accent">Coaches</span></h2>
+    <h2 class="section-title reveal">Meet the <span class="text-accent">Coaches</span></h2>
     <div class="row g-4">
-      <% coaches.forEach(coach => { %>
-        <div class="col-6 col-lg-3">
-          <div class="coach-card text-center h-100">
-            <div class="coach-avatar"><%= coach.name.split(' ').map(n => n[0]).join('') %></div>
+      <% coaches.forEach((coach, i) => { %>
+        <% const coachClass = classes.find(c => c.coach === coach.name); %>
+        <div class="col-6 col-lg-3 reveal" style="--reveal-delay: <%= i * 90 %>ms">
+          <div class="coach-card tilt text-center h-100">
+            <div class="coach-ring">
+              <% if (photos.coaches[coach.name]) { %>
+                <img class="coach-photo" src="<%= photos.coaches[coach.name] %>" alt="<%= coach.name %>" loading="lazy">
+              <% } else { %>
+                <div class="coach-avatar"><%= coach.name.split(' ').map(n => n[0]).join('') %></div>
+              <% } %>
+            </div>
             <h3 class="h5 fw-bold mt-3 mb-1"><%= coach.name %></h3>
             <p class="text-white-50 mb-2"><%= coach.role %></p>
             <span class="badge badge-accent"><%= coach.cert %></span>
+            <p class="coach-speciality">Speciality: <%= coach.speciality %></p>
+            <% if (coachClass) { %>
+              <a class="coach-book" href="/booking?class=<%= coachClass.key %>">Train with <%= coach.name.split(' ')[0] %> <i class="bi bi-arrow-right"></i></a>
+            <% } %>
           </div>
         </div>
       <% }) %>
@@ -141,4 +199,5 @@
   </div>
 </section>
 
+<script src="/js/home.js" defer></script>
 <%- include('partials/footer') %>

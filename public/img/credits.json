@@ -1,0 +1,52 @@
+[
+  {
+    "slot": "hero",
+    "file": "/img/hero.jpg",
+    "title": "Kettlebell workout",
+    "author": "Rafaelqcn",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Kettlebell_workout.jpg",
+    "changes": "Resized for the web"
+  },
+  {
+    "slot": "classes/wod",
+    "file": "/img/classes/wod.jpg",
+    "title": "Rope climb in CrossFit workout DSC2538",
+    "author": "Kiet Le",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Rope_climb_in_CrossFit_workout_DSC2538.jpg",
+    "changes": "Resized for the web"
+  },
+  {
+    "slot": "classes/olympic",
+    "file": "/img/classes/olympic.jpg",
+    "title": "Fit young man doing deadlift exercise in gym",
+    "author": "Nenad Stojkovic",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Fit_young_man_doing_deadlift_exercise_in_gym.jpg",
+    "changes": "Resized for the web"
+  },
+  {
+    "slot": "classes/foundations",
+    "file": "/img/classes/foundations.jpg",
+    "title": "Personal training kettle bell squat",
+    "author": "PTPioneer",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Personal_training_kettle_bell_squat.jpg",
+    "changes": "Resized for the web"
+  },
+  {
+    "slot": "classes/open-gym",
+    "file": "/img/classes/open-gym.jpg",
+    "title": "Cross-training gym, Marine Corps Base Hawaii",
+    "author": "Cpl. Reece Lodder",
+    "license": "Public domain",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Marine_Corps_Base_Hawaii_cross-training_gym_celebrates_first_anniversary_120814-M-MM918-001.jpg",
+    "changes": "Resized for the web"
+  }
+]

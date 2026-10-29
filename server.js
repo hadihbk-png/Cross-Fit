@@ -14,6 +14,7 @@ const express = require('express');
 const session = require('express-session');
 const { site, classes, coaches, schedule, timeSlots, hours, booking, assistant } = require('./lib/gym');
 const { loadUser } = require('./lib/auth');
+const { homePhotos, photoCredits } = require('./lib/photos');
 const { startPendingSweep } = require('./lib/payments');
 const userService = require('./services/userService');
 const bookingRoutes = require('./routes/booking');
@@ -60,7 +61,13 @@ app.locals.dropIn = booking.dropIn;
 app.locals.assistantName = assistant.name;
 
 app.get('/', (req, res) => {
-  res.render('index', { title: 'Home', classes, coaches, schedule, timeSlots, hours });
+  res.render('index', {
+    title: 'Home', classes, coaches, schedule, timeSlots, hours, booking, photos: homePhotos(classes, coaches),
+  });
+});
+
+app.get('/credits', (req, res) => {
+  res.render('credits', { title: 'Photo credits', credits: photoCredits() });
 });
 
 app.use('/booking', bookingRoutes);

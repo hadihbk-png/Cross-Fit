@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-title">Photo <span class="text-accent">credits</span></h1>
+  </div>
+</section>
+
+<section class="section pt-5">
+  <div class="container" style="max-width: 820px;">
+    <p class="text-secondary mb-4">
+      Some photos on this site are used under open licences from Wikimedia Commons. Thank you to the photographers below.
+    </p>
+    <% if (!credits.length) { %>
+      <p>All photos on this site belong to <%= site.name %>.</p>
+    <% } else { %>
+      <ul class="list-unstyled d-grid gap-3 mb-0">
+        <% credits.forEach(c => { %>
+          <li class="credit-item">
+            <img src="<%= c.file %>" alt="" loading="lazy">
+            <div>
+              <div class="fw-bold"><a href="<%= c.source %>" target="_blank" rel="noopener"><%= c.title %></a></div>
+              <div class="small">
+                by <%= c.author %> ·
+                <% if (c.licenseUrl) { %><a href="<%= c.licenseUrl %>" target="_blank" rel="noopener"><%= c.license %></a><% } else { %><%= c.license %><% } %>
+                <% if (c.changes) { %> · <%= c.changes %><% } %>
+              </div>
+              <div class="small text-secondary">Used for: <%= c.usedFor %></div>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
