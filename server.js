@@ -22,6 +22,8 @@ const authRoutes = require('./routes/auth');
 const myBookingsRoutes = require('./routes/myBookings');
 const deskRoutes = require('./routes/desk');
 const chatRoutes = require('./routes/chat');
+const webhookRoutes = require('./routes/webhooks');
+const { SqliteSessionStore } = require('./services/sessionStore');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,10 +34,15 @@ app.set('views', path.join(__dirname, 'views'));
 if (isProduction) app.set('trust proxy', 1); // behind a proxy that terminates HTTPS
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Webhooks need the raw body for signature checks and no session, so they come before both
+app.use('/webhooks', webhookRoutes);
+
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(session({
   name: 'idc.sid',
   secret: process.env.SESSION_SECRET,
+  store: new SqliteSessionStore(), // logins and chat history survive restarts
   resave: false,
   saveUninitialized: false,
   cookie: {

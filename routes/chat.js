@@ -1,6 +1,7 @@
 const express = require('express');
 const { assistant } = require('../lib/gym');
 const assistantService = require('../services/assistantService');
+const { createLimiter } = require('../lib/rateLimit');
 
 const router = express.Router();
 router.use(express.json({ limit: '4kb' }));
@@ -9,20 +10,17 @@ const MAX_MESSAGE_LENGTH = 800;
 const MAX_TURNS_SENT = 10;          // earlier turns are dropped from what the model sees
 const LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const LIMIT_PER_SESSION = 20;       // messages per visitor per 10 minutes
-const LIMIT_PER_IP = 60;            // backstop for visitors who drop their cookie
 
-// Simple in-memory sliding-window limiter
-const hitsByIp = new Map();
-function overLimit(timestamps, max, now) {
-  while (timestamps.length && now - timestamps[0] > LIMIT_WINDOW_MS) timestamps.shift();
-  if (timestamps.length >= max) return true;
-  timestamps.push(now);
+// Backstop for visitors who drop their cookie
+const perIp = createLimiter({ windowMs: LIMIT_WINDOW_MS, max: 60 });
+
+// Per-visitor count, kept in the session
+function overSessionLimit(req, now) {
+  const recent = (req.session.chatHits || []).filter((t) => now - t < LIMIT_WINDOW_MS);
+  if (recent.length >= LIMIT_PER_SESSION) return true;
+  req.session.chatHits = [...recent, now];
   return false;
 }
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, ts] of hitsByIp) if (!ts.length || now - ts[ts.length - 1] > LIMIT_WINDOW_MS) hitsByIp.delete(ip);
-}, LIMIT_WINDOW_MS).unref();
 
 // The conversation lives in the server-side session, so visitors can't forge earlier assistant turns
 const historyOf = (req) => (req.session.chat ||= []);
@@ -43,10 +41,7 @@ router.post('/', async (req, res) => {
     return res.status(503).json({ error: "The assistant isn't available right now. Please call us instead." });
   }
 
-  const now = Date.now();
-  req.session.chatHits ||= [];
-  if (!hitsByIp.has(req.ip)) hitsByIp.set(req.ip, []);
-  if (overLimit(req.session.chatHits, LIMIT_PER_SESSION, now) || overLimit(hitsByIp.get(req.ip), LIMIT_PER_IP, now)) {
+  if (overSessionLimit(req, Date.now()) || perIp.hit(req.ip)) {
     return res.status(429).json({ error: "You've sent a lot of messages. Please wait a few minutes and try again." });
   }
 

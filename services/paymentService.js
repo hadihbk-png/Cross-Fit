@@ -51,4 +51,19 @@ function expireCheckoutSession(sessionId) {
   return stripe.checkout.sessions.expire(sessionId);
 }
 
-module.exports = { isConfigured, createCheckoutSession, retrieveCheckoutSession, expireCheckoutSession };
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+if (stripe && !webhookSecret) {
+  console.warn('STRIPE_WEBHOOK_SECRET is not set. Stripe webhooks are disabled; paid bookings are still confirmed on the success page and by the 5-minute check.');
+}
+
+const webhooksConfigured = () => Boolean(stripe && webhookSecret);
+
+// Verifies the Stripe-Signature header against the raw request body. Throws if it doesn't match.
+function constructWebhookEvent(rawBody, signature) {
+  return stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+}
+
+module.exports = {
+  isConfigured, createCheckoutSession, retrieveCheckoutSession, expireCheckoutSession,
+  webhooksConfigured, constructWebhookEvent,
+};

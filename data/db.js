@@ -41,6 +41,16 @@ db.exec(`
   );
 `);
 
+// Login sessions (express-session), so restarts don't log everyone out
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sessions (
+    sid     TEXT PRIMARY KEY,
+    sess    TEXT NOT NULL,      -- JSON
+    expires INTEGER NOT NULL    -- ms since epoch
+  );
+  CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions (expires);
+`);
+
 // Migrations: add columns to existing databases without touching their rows
 const hasColumn = (table, column) =>
   db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);

@@ -1,10 +1,19 @@
 const express = require('express');
 const userService = require('../services/userService');
 const { safeReturnTo } = require('../lib/auth');
+const { createLimiter } = require('../lib/rateLimit');
 
 const router = express.Router();
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Failed logins: 5 per account per visitor, 20 per visitor, every 15 minutes.
+// Keyed by IP as well as email, so nobody can lock a real athlete (or the coach) out from elsewhere.
+const failedPerAccount = createLimiter({ windowMs: 15 * 60 * 1000, max: 5 });
+const failedPerIp = createLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
+const signupsPerIp = createLimiter({ windowMs: 60 * 60 * 1000, max: 5 });
+
+const minutes = (seconds) => Math.max(1, Math.ceil(seconds / 60));
 
 // Start a fresh session for the user (prevents session fixation), then redirect
 function logIn(req, res, next, user, redirectTo, flashText) {
@@ -40,6 +49,14 @@ router.post('/register', async (req, res, next) => {
     return res.status(422).render('register', { title: 'Register', values, errors });
   }
 
+  if (signupsPerIp.hit(req.ip)) {
+    return res.status(429).render('register', {
+      title: 'Register',
+      values,
+      errors: { email: `Too many new accounts from this connection. Please try again in ${minutes(signupsPerIp.retryAfter(req.ip))} minutes.` },
+    });
+  }
+
   try {
     const user = await userService.registerUser({ ...values, password });
     const returnTo = safeReturnTo(req.session.returnTo);
@@ -61,13 +78,26 @@ router.post('/login', async (req, res, next) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
 
+  const accountKey = `${req.ip}|${email}`;
+  if (failedPerAccount.isLimited(accountKey) || failedPerIp.isLimited(req.ip)) {
+    const wait = Math.max(failedPerAccount.retryAfter(accountKey), failedPerIp.retryAfter(req.ip));
+    res.set('Retry-After', String(wait));
+    return res.status(429).render('login', {
+      title: 'Log in', values: { email },
+      error: `Too many failed attempts. Please wait ${minutes(wait)} minutes and try again.`,
+    });
+  }
+
   try {
     const user = email && password ? await userService.authenticate(email, password) : null;
     if (!user) {
+      failedPerAccount.hit(accountKey);
+      failedPerIp.hit(req.ip);
       return res.status(401).render('login', {
         title: 'Log in', values: { email }, error: 'Email or password is incorrect.',
       });
     }
+    failedPerAccount.reset(accountKey);
     const returnTo = safeReturnTo(req.session.returnTo);
     logIn(req, res, next, user, returnTo, `Welcome back, ${user.name.split(' ')[0]}!`);
   } catch (err) {
